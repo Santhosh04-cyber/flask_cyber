@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, redirect, url_for
+from flask import Flask, render_template_string, request, redirect, url_for # type: ignore
 
 app = Flask(__name__)
 
@@ -20,7 +20,13 @@ template = """
     <h1>Hotel Menu</h1>
     <ul>
         {% for item in menu %}
-            <li>{{ item['name'] }} - ${{ item['price'] }}</li>
+            <li>
+                {{ item['name'] }} - ${{ item['price'] }}
+                <!-- Add Remove Button -->
+                <form method="POST" action="{{ url_for('remove_item', item_id=item['id']) }}" style="display:inline;">
+                    <input type="submit" value="Remove">
+                </form>
+            </li>
         {% endfor %}
     </ul>
 
@@ -44,6 +50,11 @@ def add_item():
     price = float(request.form['price'])
     new_id = max(item['id'] for item in menu) + 1 if menu else 1
     menu.append({'id': new_id, 'name': name, 'price': price})
+    return redirect(url_for('menu_display'))
+@app.route('/remove/<int:item_id>', methods=['POST'])
+def remove_item(item_id):
+    global menu
+    menu = [item for item in menu if item['id'] != item_id]  
     return redirect(url_for('menu_display'))
 
 if __name__ == '__main__':
